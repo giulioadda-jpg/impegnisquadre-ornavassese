@@ -1,0 +1,6 @@
+{
+  "name": "USD Ornavassese - Generatore Locandine Social",
+  "description": "Generatore di locandine social 4:5 (1080x1350 px) per USD Ornavassese con OCR locale Tesseract.js ed esportazione PNG.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
