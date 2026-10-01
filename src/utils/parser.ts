@@ -207,7 +207,7 @@ function isNoiseLine(line: string): boolean {
   if (/^\s*(\d{1,3}\s*%|[45]g|lte|wi-?fi|tim|vodafone|wind\s*tre|iliad|fastweb|kena|ho\.)\s*$/i.test(trimmed)) return true;
   if (/\b\d{1,2}[:.]\d{2}\b/.test(trimmed) && (/\b([45]g|lte|wi-?fi|\d{1,3}%)\b/i.test(trimmed))) return true;
 
-  if (/^([<‹«x✕✖•●▪►]\s*)?(dettagli(\s+evento)?|partecipanti|impostazioni|indietro|back|eventi|calendario|info|chiudi|menu)\s*$/i.test(trimmed)) return true;
+  if (/^([<‹«x✕✖•●▪►@]\s*)?(dettagli(\s+evento)?|partecipanti|impostazioni|indietro|back|eventi|calendario|info|chiudi|menu)\s*$/i.test(trimmed)) return true;
   if (/^(creato\s+da|gestito\s+da|organizzato\s+da|amministratore|inviti|convocazioni|ruolo|autore)\b/i.test(trimmed)) return true;
 
   return isStopLine(trimmed);
@@ -421,7 +421,7 @@ function parseEventBlock(block: string, fallbackIdx: number): ScheduleEvent | nu
     match = match
       .replace(/\s*[-–—]\s*(visibilit[àa]?|visbita|visib|visti|visita|pubblico|scheda).*$/i, '')
       .replace(/\b(visibilit[àa]?|visbita|visib|visti|visita)\b.*$/i, '')
-      .replace(/^[©®•*#-]\s*/, '')
+      .replace(/^[@©®•*#\-–—\s]+/, '')
       .trim();
   }
 
@@ -429,15 +429,15 @@ function parseEventBlock(block: string, fallbackIdx: number): ScheduleEvent | nu
     category = category
       .replace(/(\d{4})\s*(\d{4})0?(\d)\b/, '$1 $2 U$3')
       .replace(/\bU\s*2\b/i, 'U12')
-      .replace(/^[©®•*#-]\s*/, '')
+      .replace(/^[@©®•*#\-–—\s]+/, '')
       .replace(/\s+[x✕✖]$/i, '')
       .trim()
       .toUpperCase();
   }
 
-  badge = badge.replace(/^[©®•*#-]\s*/, '').trim().toUpperCase();
-  date = (date || 'DATA E ORARIO DA DEFINIRE').replace(/^[©®•*#-]\s*/, '').trim();
-  location = (location || 'Campo da definire').replace(/^[©®•*#-]\s*/, '').trim();
+  badge = badge.replace(/^[@©®•*#\-–—\s]+/, '').trim().toUpperCase();
+  date = (date || 'DATA E ORARIO DA DEFINIRE').replace(/^[@©®•*#\-–—\s]+/, '').trim();
+  location = (location || 'Campo da definire').replace(/^[@©®•*#\-–—\s]+/, '').trim();
   match = (match || 'Partita in definizione').trim();
 
   if (!category && !match && !date) {
