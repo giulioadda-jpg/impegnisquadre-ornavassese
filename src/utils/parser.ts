@@ -68,9 +68,7 @@ export function normalizeDateAndOrario(raw: string): string {
   if (rangeMatch) {
     const startH = rangeMatch[1].padStart(2, '0');
     const startM = rangeMatch[2];
-    const endH = rangeMatch[3].padStart(2, '0');
-    const endM = rangeMatch[4];
-    timeStr = `${startH}:${startM} - ${endH}:${endM}`;
+    timeStr = `${startH}:${startM}`;
   } else {
     const singleMatch = str.match(/(?:ore|h)?\s*(\d{1,2})[:.](\d{2})/i);
     if (singleMatch) {

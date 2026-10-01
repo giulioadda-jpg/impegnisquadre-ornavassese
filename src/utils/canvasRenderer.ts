@@ -8,7 +8,7 @@ export const CANVAS_HEIGHT = 1350;
 // 1. GESTIONE LOGO PERMANENTE (BASE64)
 // INCOLLA QUI LA STRINGA BASE64 DEL PNG TRASPARENTE
 // ============================================================================
-export const CLUB_LOGO_BASE64: string = ""; // INCOLLA QUI LA STRINGA BASE64 DEL PNG TRASPARENTE
+export const CLUB_LOGO_BASE64: string = "";
 
 export interface CompetitionStyle {
   bg: string;
@@ -482,14 +482,14 @@ export function renderScheduleToCanvas(
   const logoSize = 82;
   drawClubLogo(ctx, CANVAS_WIDTH / 2, logoCenterY, logoSize, settings.customLogo, onImageRedraw);
 
-  // 3. Titolo su riga singola: "IMPEGNI SQUADRE AGONISTICHE • USD ORNAVASSESE"
+  // 3. Titolo su riga singola: "IMPEGNI SQUADRE • USD ORNAVASSESE"
   const titleY = 154;
-  const titleFontSize = 32;
+  const titleFontSize = 38;
   ctx.save();
   ctx.font = `900 ${titleFontSize}px "Inter", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
   ctx.textBaseline = 'middle';
 
-  const part1 = 'IMPEGNI SQUADRE AGONISTICHE ';
+  const part1 = 'IMPEGNI SQUADRE ';
   const partBullet = '• ';
   const part2 = 'USD ORNAVASSESE';
 
@@ -562,7 +562,6 @@ export function renderScheduleToCanvas(
 
     const compStyle = getCompetitionStyle(badgeText);
 
-    // Sfondo del box
     ctx.save();
     roundRect(ctx, cardX, cardY, cardWidth, cardHeight, borderRadius);
     ctx.fillStyle = '#141414';
@@ -570,12 +569,10 @@ export function renderScheduleToCanvas(
 
     ctx.clip();
 
-    // Barra verticale a sinistra colorata in base alla competizione
     ctx.fillStyle = compStyle.accentBar;
     ctx.fillRect(cardX, cardY, leftAccentWidth, cardHeight);
     ctx.restore();
 
-    // Bordo box
     ctx.save();
     roundRect(ctx, cardX + 0.5, cardY + 0.5, cardWidth - 1, cardHeight - 1, borderRadius);
     ctx.strokeStyle = '#2a2a2a';
@@ -583,7 +580,6 @@ export function renderScheduleToCanvas(
     ctx.stroke();
     ctx.restore();
 
-    // Header interno della card
     const headerCenterY = cardY + 28;
     const contentLeftX = cardX + 24;
     const contentRightX = cardX + cardWidth - 22;
@@ -599,7 +595,6 @@ export function renderScheduleToCanvas(
     const maxHeaderAvailable = cardWidth - 48 - 120;
     const fullCatWidth = ctx.measureText(categoryText).width;
 
-    // Badge Tipologia con colori dedicati
     const badgeWidth = drawCategoryBadge(
       ctx,
       contentLeftX + Math.min(fullCatWidth + 14, maxHeaderAvailable - 105),
@@ -624,7 +619,6 @@ export function renderScheduleToCanvas(
     ctx.fillText(displayCat, contentLeftX, headerCenterY);
     ctx.restore();
 
-    // Separatore interno
     const cardDividerY = cardY + 52;
     ctx.strokeStyle = '#1e1e1e';
     ctx.lineWidth = 1;
@@ -633,13 +627,11 @@ export function renderScheduleToCanvas(
     ctx.lineTo(cardX + cardWidth - 16, cardDividerY);
     ctx.stroke();
 
-    // Dettagli con icone
     const iconCenterX = contentLeftX + 16;
     const textStartX = contentLeftX + 40;
     const maxRowTextWidth = cardWidth - (textStartX - cardX) - 24;
     const iconSize = 17;
 
-    // Riga 1: Data e Orario
     const row1Y = cardY + 75;
     drawClockIcon(ctx, iconCenterX, row1Y, iconSize, '#9E9E9E');
 
@@ -653,7 +645,6 @@ export function renderScheduleToCanvas(
     ctx.fillText(dateLines[0] || dateStr, textStartX, row1Y);
     ctx.restore();
 
-    // Riga 2: Luogo
     const row2Y = cardY + 113;
     drawPinIcon(ctx, iconCenterX, row2Y, iconSize, '#9E9E9E');
 
@@ -672,7 +663,6 @@ export function renderScheduleToCanvas(
     ctx.fillText(locStr, textStartX, row2Y);
     ctx.restore();
 
-    // Riga 3: Partita / Squadre
     const row3Y = cardY + 151;
     drawTrophyIcon(ctx, iconCenterX, row3Y, iconSize, '#9E9E9E');
 
@@ -692,7 +682,6 @@ export function renderScheduleToCanvas(
     ctx.restore();
   });
 
-  // Indicatore carosello in basso (se > 1 pagina)
   if (totalPages > 1) {
     drawCarouselIndicator(ctx, currentPageNumber, totalPages);
   }
@@ -700,14 +689,53 @@ export function renderScheduleToCanvas(
   return { totalPages, currentPage: currentPageNumber };
 }
 
-export function downloadCanvasAsPng(canvas: HTMLCanvasElement, filename: string): void {
-  const dataUrl = canvas.toDataURL('image/png', 1.0);
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = dataUrl;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+/**
+ * Downloads a canvas element as a high-res PNG file.
+ * Uses Web Share API on iOS/Safari mobile and Blob URL for desktop browsers.
+ */
+export async function downloadCanvasAsPng(canvas: HTMLCanvasElement, filename: string): Promise<void> {
+  return new Promise((resolve) => {
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        resolve();
+        return;
+      }
+
+      // 1. Su iOS / Safari mobile attiva la schermata nativa per "Salva immagine" in Foto o "Salva su File"
+      if (navigator.share && navigator.canShare) {
+        try {
+          const file = new File([blob], filename, { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: filename,
+            });
+            resolve();
+            return;
+          }
+        } catch (err) {
+          if ((err as Error).name === 'AbortError') {
+            resolve();
+            return;
+          }
+        }
+      }
+
+      // 2. Download standard con Blob URL per desktop e fallback browser
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+        resolve();
+      }, 1500);
+    }, 'image/png', 1.0);
+  });
 }
 
 export async function copyCanvasToClipboard(canvas: HTMLCanvasElement): Promise<boolean> {
@@ -747,10 +775,10 @@ export async function downloadAllPages(
   for (let p = 0; p < totalPages; p++) {
     renderScheduleToCanvas(offscreen, events, settings, p);
     const suffix = totalPages > 1 ? `-pag-${p + 1}` : '';
-    downloadCanvasAsPng(offscreen, `${baseFilename}${suffix}.png`);
+    await downloadCanvasAsPng(offscreen, `${baseFilename}${suffix}.png`);
 
     if (totalPages > 1 && p < totalPages - 1) {
-      await new Promise((resolve) => setTimeout(resolve, 350));
+      await new Promise((resolve) => setTimeout(resolve, 400));
     }
   }
 
